@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>S4b — Je me souviens</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+
+  :root{
+    --bg:#f2f0eb;
+    --card:#ffffff;
+    --navy:#1c2b45;
+    --navy-soft:#33455f;
+    --navy-deep:#111c30;
+    --gold:#b8924a;
+    --gold-strong:#c9a24a;
+    --gold-light:#e7d7b5;
+    --text:#2c2c2c;
+    --muted:#6b6b6b;
+    --line:#e6e2d8;
+    --pas:#33455f;
+    --rien:#5b7b93;
+    --jamais:#9c4a34;
+    --plus:#2c6b4f;
+    --personne:#b8924a;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;height:100%;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'Inter',system-ui,sans-serif;
+    line-height:1.55;
+    overflow-x:hidden;
+  }
+  h1,h2,h3{font-family:'Playfair Display',serif;color:var(--navy);}
+
+  .topbar{
+    position:fixed;top:0;left:0;right:0;height:60px;z-index:80;
+    background:rgba(242,240,235,0.94);backdrop-filter:blur(6px);
+    border-bottom:1px solid var(--line);
+    display:flex;align-items:center;justify-content:space-between;padding:0 26px;
+  }
+  .topbar.on-dark{background:rgba(17,28,48,0.72);border-bottom-color:rgba(231,215,181,0.25);}
+  .topbar img{height:32px;display:block;filter:drop-shadow(0 1px 3px rgba(0,0,0,0.25));}
+  .topbar .meta{font-size:12px;color:var(--muted);text-align:right;line-height:1.3;}
+  .topbar.on-dark .meta{color:var(--gold-light);}
+  .botbar{
+    position:fixed;bottom:0;left:0;right:0;height:64px;z-index:80;
+    background:rgba(242,240,235,0.94);backdrop-filter:blur(6px);
+    border-top:1px solid var(--line);
+    display:flex;align-items:center;justify-content:center;gap:16px;
+  }
+  .nav-btn{
+    border:1.5px solid var(--navy);background:#fff;color:var(--navy);
+    border-radius:30px;padding:9px 22px;font-weight:600;cursor:pointer;
+    font-family:'Inter',sans-serif;font-size:14px;
+  }
+  .nav-btn:hover:not(:disabled){background:var(--navy);color:#fff;}
+  .nav-btn:disabled{opacity:.28;cursor:default;}
+  .dots{display:flex;gap:7px;}
+  .dot{width:8px;height:8px;border-radius:50%;background:var(--line);cursor:pointer;border:none;padding:0;}
+  .dot.active{background:var(--gold);width:22px;border-radius:5px;transition:all .2s;}
+  .counter{font-size:12px;color:var(--muted);min-width:54px;text-align:center;}
+
+  .deck{position:relative;}
+  .slide{
+    display:none;min-height:100vh;flex-direction:column;justify-content:center;
+    max-width:1020px;margin:0 auto;padding:100px 34px 100px;
+  }
+  .slide.active{display:flex;animation:fadeIn .45s ease;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+
+  .eyebrow{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:var(--gold);font-weight:700;margin-bottom:6px;}
+  .slide h1{font-size:2.4rem;margin:0 0 10px;}
+  .slide .lead{font-style:italic;color:var(--muted);font-size:1.05rem;margin-bottom:26px;}
+  .slide h2{font-size:1.7rem;margin:0 0 8px;}
+
+  .card{background:var(--card);border-radius:14px;box-shadow:0 2px 10px rgba(28,43,69,0.06);padding:22px 24px;}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;}
+
+  /* ---------- SLIDE 1 : TITRE — style Star Interview ---------- */
+  #slide-title{
+    background:
+      radial-gradient(circle at 15% 20%, rgba(201,162,74,0.20), transparent 40%),
+      radial-gradient(circle at 85% 75%, rgba(201,162,74,0.16), transparent 45%),
+      linear-gradient(160deg, var(--navy-deep), var(--navy) 55%, var(--navy-soft));
+    max-width:none;width:100%;
+  }
+  #slide-title .inner{max-width:820px;margin:0 auto;text-align:center;position:relative;z-index:1;}
+  .stars{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:0;}
+  .stars span{
+    position:absolute;width:3px;height:3px;background:var(--gold-light);
+    border-radius:50%;opacity:.6;animation:twinkle 3.5s ease-in-out infinite;
+  }
+  @keyframes twinkle{0%,100%{opacity:.15;transform:scale(1);}50%{opacity:.9;transform:scale(1.6);}}
+  .kicker{letter-spacing:.35em;text-transform:uppercase;font-size:12px;color:var(--gold-light);margin-bottom:14px;font-weight:600;}
+  #slide-title h1{font-weight:900;font-size:clamp(32px,6vw,54px);color:#fff;margin:0 0 12px;letter-spacing:.01em;}
+  #slide-title h1 span{color:var(--gold-strong);}
+  #slide-title .lead{color:var(--gold-light);opacity:.9;font-size:1.05rem;margin-bottom:30px;}
+  .dark-card{
+    background:rgba(255,255,255,0.07);border:1px solid rgba(231,215,181,0.22);
+    border-radius:16px;padding:24px 28px;text-align:left;backdrop-filter:blur(2px);
+  }
+  .dark-card p{color:#f2ece0;margin:0 0 10px;font-size:1.02rem;}
+  .dark-card p:last-child{margin-bottom:0;color:var(--gold-light);font-size:13.5px;opacity:.85;}
+  .dark-card b{color:var(--gold-strong);}
+
+  /* ---------- generic sequential reveal ---------- */
+  .seq-controls{display:flex;align-items:center;gap:14px;margin-top:18px;}
+  .seq-btn{border:1.5px solid var(--gold);background:var(--navy);color:#fff;border-radius:30px;padding:10px 22px;font-weight:700;cursor:pointer;font-size:14px;}
+  .seq-btn:hover{background:var(--gold);border-color:var(--gold);}
+  .seq-btn:disabled{background:var(--line);border-color:var(--line);color:var(--muted);cursor:default;}
+  .seq-reset{border:none;background:none;color:var(--muted);font-size:12px;text-decoration:underline;cursor:pointer;}
+  .seq-item{opacity:0;transform:translateY(10px);transition:opacity .35s ease,transform .35s ease;}
+  .seq-item.shown{opacity:1;transform:translateY(0);}
+
+  /* ---------- SLIDE 2 : nuances + loisirs fusionnés ---------- */
+  .group-label{font-size:13px;text-transform:uppercase;letter-spacing:.04em;color:var(--gold);font-weight:700;margin:22px 0 8px;}
+  .group-label:first-child{margin-top:0;}
+  .reveal-row{
+    display:grid;grid-template-columns:1fr 22px 1fr;align-items:center;gap:10px;
+    padding:11px 18px;border-radius:10px;margin-bottom:7px;cursor:pointer;
+  }
+  .reveal-row.nuance{color:#fff;font-weight:600;font-size:14.5px;}
+  .reveal-row.loisir{background:var(--card);border:1.5px solid var(--line);color:var(--navy);font-size:14.5px;box-shadow:0 1px 4px rgba(28,43,69,0.05);}
+  .reveal-row.loisir.persona{border-color:var(--gold);background:var(--gold-light);}
+  .row-arrow{text-align:center;opacity:.5;font-size:13px;}
+  .reveal-row .row-fr{visibility:hidden;font-style:italic;}
+  .reveal-row.flipped .row-fr{visibility:visible;}
+  .reveal-row.nuance .row-fr{opacity:.92;}
+  .reveal-row.loisir .row-fr{color:var(--navy-soft);}
+  .row-persona-tag{font-size:10.5px;text-transform:uppercase;font-weight:700;color:#7a5c1e;display:block;margin-bottom:1px;}
+  .conj-note{font-size:13.5px;color:var(--navy-soft);margin-bottom:16px;}
+
+  /* ---------- SLIDE 3 : négation ---------- */
+  .neg-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:16px;}
+  .neg-card{background:var(--card);border-radius:14px;box-shadow:0 2px 10px rgba(28,43,69,0.06);padding:18px 20px;border-top:5px solid var(--pas);}
+  .neg-card.rien{border-top-color:var(--rien);}
+  .neg-card.jamais{border-top-color:var(--jamais);}
+  .neg-card.plus{border-top-color:var(--plus);}
+  .neg-card.personne{border-top-color:var(--personne);background:var(--gold-light);}
+  .neg-card h3{font-size:1.15rem;margin:0 0 4px;}
+  .neg-card .badge{display:inline-block;font-size:10.5px;letter-spacing:.03em;text-transform:uppercase;padding:2px 8px;border-radius:20px;margin-left:6px;font-weight:700;background:var(--bg);color:var(--navy-soft);vertical-align:middle;}
+  .tense-row{font-size:13.5px;margin-top:8px;color:var(--text);}
+  .tense-row .tense{display:inline-block;min-width:98px;font-size:10.5px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);font-weight:700;}
+
+  .frame-box{background:var(--card);border-radius:14px;box-shadow:0 2px 10px rgba(28,43,69,0.06);padding:18px 22px;margin-bottom:12px;}
+  .frame-box .fr{font-size:1.1rem;color:var(--navy);}
+  .frame-box .hint{font-size:12.5px;color:var(--muted);font-style:italic;margin-top:3px;}
+  .frame-box .example{font-size:13px;color:var(--gold);font-style:italic;margin-top:6px;padding-top:6px;border-top:1px dashed var(--line);}
+
+  /* ---------- flip cards (rule cards) ---------- */
+  .rule-cols{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+  .rule-flip{perspective:1400px;}
+  .rule-flip-inner{position:relative;width:100%;min-height:260px;transition:transform .6s cubic-bezier(.4,.2,.2,1);transform-style:preserve-3d;cursor:pointer;}
+  .rule-flip.flipped .rule-flip-inner{transform:rotateY(180deg);}
+  .rule-face{position:absolute;inset:0;backface-visibility:hidden;border-radius:14px;padding:22px 24px;display:flex;flex-direction:column;justify-content:center;color:#fff;}
+  .rule-front.y, .rule-back.y{background:linear-gradient(135deg,#1c2b45,#33455f);}
+  .rule-front.en, .rule-back.en{background:linear-gradient(135deg,#7a5c1e,#b8924a);}
+  .rule-back{transform:rotateY(180deg);}
+  .rule-face h3{color:#fff;font-size:1.5rem;margin:0 0 6px;}
+  .rule-face .rule-line{font-size:14.5px;opacity:.92;margin-bottom:14px;}
+  .rule-face .verb-list{font-size:13.5px;opacity:.9;line-height:1.7;}
+  .rule-face .verb-list b{color:#fff;}
+  .rule-face .flip-hint{margin-top:16px;font-size:11.5px;opacity:.7;font-style:italic;}
+  .ex-row{background:rgba(255,255,255,0.14);border-radius:8px;padding:9px 13px;margin-top:8px;font-size:13.5px;}
+  .ex-row b{color:#fff;}
+
+  /* ---------- flip cards (time cards) ---------- */
+  .three-col{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;}
+  .tc-flip{perspective:1200px;}
+  .tc-flip-inner{position:relative;width:100%;min-height:180px;transition:transform .55s cubic-bezier(.4,.2,.2,1);transform-style:preserve-3d;cursor:pointer;}
+  .tc-flip.flipped .tc-flip-inner{transform:rotateY(180deg);}
+  .tc-face{position:absolute;inset:0;backface-visibility:hidden;border-radius:14px;padding:18px 20px;}
+  .tc-front{background:var(--card);box-shadow:0 2px 10px rgba(28,43,69,0.06);border-top:4px solid var(--gold);}
+  .tc-front h3{font-size:1.05rem;margin:0 0 8px;}
+  .tc-front p{font-size:13.5px;color:var(--muted);margin:0;}
+  .tc-back{background:var(--navy);color:#fff;transform:rotateY(180deg);display:flex;flex-direction:column;justify-content:center;}
+  .tc-back .ex{font-size:14.5px;margin-bottom:8px;}
+  .tc-back .page-ref{display:inline-block;font-size:11px;color:var(--navy);background:var(--gold-light);border-radius:20px;padding:2px 9px;font-weight:600;}
+  .tc-back .note{font-size:11.5px;color:var(--gold-light);font-style:italic;}
+  .flip-tip{font-size:11px;color:var(--muted);text-align:center;margin-top:6px;font-style:italic;}
+
+  .item{background:var(--card);border-radius:12px;box-shadow:0 2px 8px rgba(28,43,69,0.06);padding:16px 16px 14px;}
+  .item .num{font-family:'Playfair Display',serif;color:var(--gold);font-weight:700;font-size:1.2rem;margin-right:6px;}
+  .item .verb{font-size:1rem;font-weight:600;color:var(--navy);}
+  .reveal-btn{margin-top:10px;border:1.5px solid var(--gold);background:#fff;color:var(--gold);border-radius:30px;padding:6px 15px;font-size:12.5px;font-weight:600;cursor:pointer;}
+  .reveal-btn:hover{background:var(--gold-light);}
+  .answer{display:none;margin-top:8px;padding-top:8px;border-top:1px dashed var(--line);font-size:14px;}
+  .answer.show{display:block;}
+
+  .dialog{background:var(--card);border-radius:14px;box-shadow:0 2px 10px rgba(28,43,69,0.06);padding:20px 24px;}
+  .dialog .line{display:flex;gap:10px;margin:10px 0;align-items:baseline;}
+  .dialog .who{font-weight:700;min-width:96px;border-radius:20px;padding:2px 10px;font-size:12.5px;color:#fff;text-align:center;align-self:flex-start;}
+  .dialog .who.britt{background:#e0748a;}
+  .dialog .who.mary-ellen{background:#8a6f2f;}
+  .dialog .who.patricia{background:#1f7a6c;}
+
+  .closing{background:var(--card);border-radius:14px;box-shadow:0 2px 10px rgba(28,43,69,0.06);padding:26px 28px;text-align:center;margin-bottom:18px;}
+  .closing p{font-size:1.15rem;color:var(--navy);margin:0;}
+  .story-note{background:var(--gold-light);border-radius:14px;padding:16px 20px;font-size:13.5px;color:#5c4718;margin-bottom:18px;}
+  .story-tag{display:inline-block;font-size:10.5px;text-transform:uppercase;letter-spacing:.03em;font-weight:700;color:#7a5c1e;background:var(--gold-light);border-radius:20px;padding:2px 9px;margin-bottom:6px;}
+
+  @media(max-width:680px){
+    .slide h1{font-size:1.9rem;}
+    .rule-cols{grid-template-columns:1fr;}
+    .reveal-row{grid-template-columns:1fr;text-align:left;}
+    .row-arrow{display:none;}
+  }
+
+  /* ================= S4b additions ================= */
+  :root{ --britt:#e0748a; --me:#8a6f2f; --pat:#1f7a6c; --imp:#9c4a34; }
+  .page-badge{display:inline-block;font-size:11.5px;color:var(--navy);background:var(--gold-light);border-radius:20px;padding:3px 11px;font-weight:700;margin-left:8px;vertical-align:middle;font-family:'Inter',sans-serif;letter-spacing:0;text-transform:none;}
+  .en{display:block;font-size:12.5px;color:var(--muted);font-style:italic;margin-top:2px;}
+  .v{color:var(--imp);font-weight:700;}
+  .story .v{color:inherit;font-weight:inherit;}
+  .story.hl .v{color:var(--imp);font-weight:700;background:#f6e3d9;border-radius:4px;padding:0 2px;}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 14px;}
+  .chip{background:var(--navy);color:#fff;border-radius:20px;padding:5px 14px;font-size:14px;font-weight:600;}
+  .chip-label{font-size:11.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:700;margin-bottom:6px;}
+
+  /* quotes */
+  .quotes{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:16px;}
+  .quote{background:var(--card);border-radius:14px;box-shadow:0 2px 10px rgba(28,43,69,0.07);padding:16px 18px;border-top:4px solid var(--navy);}
+  .quote.britt{border-top-color:var(--britt);} .quote.me{border-top-color:var(--me);} .quote.pat{border-top-color:var(--pat);}
+  .quote .qn{font-size:12px;text-transform:uppercase;letter-spacing:.05em;font-weight:800;color:var(--muted);margin-bottom:6px;}
+  .quote .qt{font-size:1.05rem;color:var(--navy);font-style:italic;}
+  .big-reveal{display:none;background:linear-gradient(135deg,var(--navy-deep),var(--navy));color:#fff;border-radius:14px;padding:18px 24px;text-align:center;}
+  .big-reveal.show{display:block;animation:fadeIn .45s ease;}
+  .big-reveal h3{color:var(--gold-strong);font-size:1.7rem;margin:0 0 4px;}
+  .big-reveal p{margin:0;color:var(--gold-light);}
+
+  /* story */
+  .senses{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px;}
+  .sense{border:1.5px solid var(--line);background:var(--card);border-radius:30px;padding:7px 16px;font-size:14px;cursor:pointer;font-weight:600;color:var(--navy);}
+  .sense.on{background:var(--gold-light);border-color:var(--gold);}
+  .story{background:var(--card);border-radius:14px;box-shadow:0 2px 10px rgba(28,43,69,0.07);padding:18px 24px;display:none;}
+  .story.show{display:block;animation:fadeIn .4s ease;}
+  .story p{margin:0 0 7px;font-size:1.04rem;color:var(--text);}
+  .story p:last-child{margin-bottom:0;}
+  .story .ic{display:inline-block;width:26px;visibility:hidden;}
+  .story.icons .ic{visibility:visible;}
+  .story .tr{display:none;font-size:13.5px;color:var(--muted);font-style:italic;margin:2px 0 0 26px;}
+  .story.en-on .tr{display:block;}
+  .story .ve{color:var(--navy);font-weight:700;font-style:normal;}
+  .story.hl .ve{background:#e4e8ef;border-radius:4px;padding:0 2px;}
+  .en-note{display:none;margin-top:10px;background:#e4e8ef;border-radius:12px;padding:10px 16px;font-size:13.5px;color:var(--navy);}
+  .story.en-on + .btn-row + .en-note, .en-note.show{display:block;}
+  .story .now{color:var(--plus);font-weight:600;}
+  .btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;}
+  .ghost{border:1.5px solid var(--gold);background:#fff;color:var(--gold);border-radius:30px;padding:7px 16px;font-size:13px;font-weight:700;cursor:pointer;}
+  .ghost:hover{background:var(--gold-light);}
+
+  /* contrast fix for gold rule cards */
+  .rule-face.en{display:flex !important;font-style:normal;font-size:inherit;margin-top:0;color:#fff;}
+  .rule-front.en, .rule-back.en{background:linear-gradient(135deg,#5e4413,#8a6526) !important;}
+  .rule-face .verb-list, .rule-face .rule-line{opacity:1 !important;color:#fff;}
+  .rule-face .flip-hint{opacity:.9 !important;color:#fff;}
+  .rule-face .ex-row{background:rgba(255,255,255,0.16);color:#fff;}
+  /* formation */
+  .form-grid{display:grid;grid-template-columns:1.25fr 1fr;gap:18px;align-items:start;}
+  .conj{background:var(--card);border-radius:14px;box-shadow:0 2px 10px rgba(28,43,69,0.07);padding:16px 20px;}
+  .conj table{width:100%;border-collapse:collapse;font-size:14.5px;}
+  .conj td{padding:7px 6px;border-bottom:1px dashed var(--line);}
+  .conj td:first-child{color:var(--muted);font-size:13px;width:92px;}
+  .conj .stem{color:var(--navy);font-weight:700;}
+  .conj .end{color:var(--imp);font-weight:700;}
+  .step{background:var(--card);border-radius:12px;box-shadow:0 2px 8px rgba(28,43,69,0.06);padding:12px 16px;margin-bottom:8px;display:none;font-size:14.5px;}
+  .step .n{font-family:'Playfair Display',serif;color:var(--gold);font-weight:700;margin-right:6px;}
+  .note-box{border-radius:12px;padding:12px 16px;font-size:13.5px;margin-top:10px;}
+  .note-box.sound{background:#e6f1eb;color:#23543f;}
+  .note-box.liaison{background:var(--gold-light);color:#5c4718;}
+  .note-box b{font-weight:700;}
+  .lk{color:var(--imp);font-weight:800;}
+
+  /* avant / maintenant */
+  .am-model{background:var(--navy);color:#f2ece0;border-radius:14px;padding:14px 20px;margin-bottom:14px;font-size:1.02rem;}
+  .am-model b{color:var(--gold-strong);}
+  .am-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+  .am{background:var(--card);border-radius:14px;box-shadow:0 2px 10px rgba(28,43,69,0.07);padding:14px 16px;border-top:4px solid var(--navy);}
+  .am.britt{border-top-color:var(--britt);} .am.me{border-top-color:var(--me);} .am.pat{border-top-color:var(--pat);}
+  .am .who{font-size:12px;text-transform:uppercase;letter-spacing:.05em;font-weight:800;color:var(--muted);margin-bottom:6px;}
+  .am .q{font-size:14.5px;color:var(--navy);margin-bottom:6px;}
+
+  /* sens */
+  .sense-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:14px;}
+  .sc{background:var(--card);border-radius:12px;box-shadow:0 2px 8px rgba(28,43,69,0.06);padding:12px 12px;text-align:center;cursor:pointer;border:1.5px solid var(--line);}
+  .sc .ico{font-size:28px;}
+  .sc .nm{font-weight:700;color:var(--navy);font-size:14px;}
+  .sc .vb{font-size:12.5px;color:var(--muted);font-style:italic;}
+  .sc .ex{font-size:12.5px;color:var(--imp);margin-top:6px;visibility:hidden;}
+  .sc.flipped .ex{visibility:visible;}
+  .audio-box{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:12px;}
+  .audio-box .item{padding:10px 12px;}
+
+  .slide.compact{padding-top:78px;padding-bottom:78px;}
+  @media(max-width:860px){
+    .quotes,.am-grid,.form-grid{grid-template-columns:1fr;}
+    .sense-grid,.audio-box{grid-template-columns:repeat(2,1fr);}
+  }
+</style>
+</head>
+<body>
+
+  <div class="topbar on-dark" id="topbar">
+    <img src="data:image/png;base64,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" alt="KingCretot Experience">
+    <div class="meta">Alliance Française de Sarasota · A2<br>Samedi 10 octobre 2026</div>
+  </div>
+
+  <div class="deck" id="deck">
+
+    <!-- 1 TITRE -->
+    <section class="slide active" id="slide-title">
+      <div class="stars" id="stars"></div>
+      <div class="inner">
+        <div class="kicker">Unité 2 · Édito A2, manuel p. 27</div>
+        <h1>Je me <span>souviens</span></h1>
+        <p class="lead">Un nouveau temps pour raconter vos souvenirs… que vous connaissez déjà.</p>
+        <div class="dark-card">
+          <p>Aujourd'hui, on part en voyage dans le passé : la maison, les vacances, les odeurs, les goûts. On découvre <b>l'imparfait</b> — et on ajoute deux phrases à votre « carte de ma vie ».</p>
+          <p>Today: childhood memories, the five senses, and a "new" tense you already use. Open your book to page 27.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2 VOUS LE PARLEZ DÉJÀ -->
+    <section class="slide">
+      <div class="eyebrow">Ouverture</div>
+      <h2>Vous le parlez déjà !</h2>
+      <p class="lead">Ces phrases viennent de <b>vos</b> cinq événements du 22 septembre. Regardez les verbes en couleur.<span class="en">These sentences are from YOUR five life events. Look at the colored verbs.</span></p>
+      <div class="quotes">
+        <div class="quote pat"><div class="qn">Patricia</div><div class="qt">« J'ai possédé un magasin de vêtements… quand j'<span class="v">avais</span> la vingtaine. »</div></div>
+        <div class="quote britt"><div class="qn">Britt</div><div class="qt">« Quand j'<span class="v">étais</span> petite, j'ai eu un chien, Max. »</div></div>
+        <div class="quote me"><div class="qn">Mary-Ellen</div><div class="qt">« Quand j'<span class="v">avais</span> cinq ans, je me suis cassé le bras. »</div></div>
+      </div>
+      <div class="chip-label">Et depuis trois semaines, vous dites aussi…</div>
+      <div class="chips">
+        <span class="chip">c'était</span><span class="chip">il y avait</span><span class="chip">j'étais</span><span class="chip">il faisait beau</span>
+      </div>
+      <div><button class="seq-btn" id="revealImp">Mais… c'est quoi, ce temps ? ▸</button></div>
+      <div class="big-reveal" id="bigReveal" style="margin-top:14px;">
+        <h3>C'est l'imparfait !</h3>
+        <p>Vous le parlez depuis trois semaines. Aujourd'hui, on lui donne son nom.</p>
+      </div>
+    </section>
+
+    <!-- 3 LE SOUVENIR DE FABRICE -->
+    <section class="slide compact">
+      <div class="eyebrow">Écoute</div>
+      <h2>Le souvenir de Fabrice</h2>
+      <p class="lead" style="margin-bottom:12px;">Écoutez d'abord, sans lire. Quels sens entendez-vous ? Cliquez sur les sens que vous reconnaissez.<span class="en">Listen first, no reading. Which senses do you hear? Click them.</span></p>
+      <div class="senses" id="senses">
+        <button class="sense">👁️ la vue</button>
+        <button class="sense">👂 l'ouïe</button>
+        <button class="sense">👃 l'odorat</button>
+        <button class="sense">👅 le goût</button>
+        <button class="sense">✋ le toucher</button>
+      </div>
+      <div class="story" id="story">
+        <p><span class="ic">👁️</span>Quand j'<span class="v">étais</span> petit, l'été, j'<span class="v">allais</span> en Corse, à Sant'Ambroggio. Je <span class="v">voyais</span> la mer tous les jours.<span class="tr">When I <span class='ve'>was</span> little, in summer, I <span class='ve'>used to go</span> to Corsica, to Sant'Ambroggio. I <span class='ve'>saw</span> the sea every day.</span></p>
+        <p><span class="ic">👂</span>Le dimanche, je <span class="v">jouais</span> au tennis au club. J'<span class="v">entendais</span> les balles… et les rires des familles.<span class="tr">On Sundays, I <span class='ve'>played</span> tennis at the club. I <span class='ve'>could hear</span> the balls… and the families laughing.</span></p>
+        <p><span class="ic">👃</span>Après les matchs, il y <span class="v">avait</span> un grand barbecue. Ça <span class="v">sentait</span> bon !<span class="tr">After the matches, there <span class='ve'>was</span> a big barbecue. It <span class='ve'>smelled</span> good!</span></p>
+        <p><span class="ic">👅</span>Pour mon anniversaire, je <span class="v">demandais</span> toujours le gâteau au chocolat de ma maman. C'<span class="v">était</span> délicieux !<span class="tr">For my birthday, I <span class='ve'>would</span> always <span class='ve'>ask for</span> my mom's chocolate cake. It <span class='ve'>was</span> delicious!</span></p>
+        <p><span class="ic">✋</span>Le soir, avec ma sœur Sophie, on <span class="v">construisait</span> des tentes avec les draps. On <span class="v">partageait</span> nos secrets.<span class="tr">In the evening, my sister Sophie and I <span class='ve'>would build</span> tents with the bedsheets. We <span class='ve'>used to share</span> our secrets.</span></p>
+        <p class="now">Aujourd'hui, en Corse, ce sont les enfants de mes copains qui font les mêmes bêtises !<span class="tr">Today, in Corsica, it's my friends' kids who <span class='ve'>get up to</span> the same mischief!</span></p>
+      </div>
+      <div class="btn-row">
+        <button class="ghost" id="showStory">Afficher le texte</button>
+        <button class="ghost" id="showIcons">Montrer les sens</button>
+        <button class="ghost" id="showVerbs">Surligner les verbes</button>
+        <button class="ghost" id="showEn">Traduction anglaise</button>
+      </div>
+      <div class="en-note"><b>Un seul imparfait en français… plusieurs traductions en anglais :</b> <i>I was · I used to go · I would ask · I could hear · I played.</i> Pas besoin de choisir : en français, c'est toujours l'imparfait !<span class="en">One French imparfait = many English forms: was, used to, would, could, simple past.</span></div>
+    </section>
+
+    <!-- 4 LES DEUX EMPLOIS -->
+    <section class="slide">
+      <div class="eyebrow">L'imparfait <span class="page-badge">Édito A2 — manuel p. 30</span></div>
+      <h2>À quoi sert l'imparfait ?</h2>
+      <p class="lead">Deux emplois, pas plus. Cliquez sur une carte pour voir les exemples.<span class="en">Two uses only. Click a card for examples.</span></p>
+      <div class="rule-cols">
+        <div class="rule-flip" id="flipHab">
+          <div class="rule-flip-inner">
+            <div class="rule-face rule-front y">
+              <h3>1 · L'habitude</h3>
+              <div class="rule-line">Ce qu'on faisait <b>souvent</b>, <b>toujours</b>, <b>tous les étés</b>…</div>
+              <div class="verb-list">Mots-clés : avant · quand j'étais petit(e) · le dimanche · tous les jours</div>
+              <div class="flip-hint">cliquez pour voir des exemples ▸</div>
+            </div>
+            <div class="rule-face rule-back y">
+              <div class="ex-row">Le dimanche, je <b>jouais</b> au tennis.</div>
+              <div class="ex-row">Tous les étés, j'<b>allais</b> en Corse.</div>
+              <div class="ex-row">Je <b>demandais</b> toujours le gâteau au chocolat.</div>
+            </div>
+          </div>
+        </div>
+        <div class="rule-flip" id="flipDec">
+          <div class="rule-flip-inner">
+            <div class="rule-face rule-front en">
+              <h3>2 · Le décor</h3>
+              <div class="rule-line">On <b>décrit</b> la scène : le lieu, le temps, les gens, l'ambiance.</div>
+              <div class="verb-list">Mots-clés : c'était · il y avait · il faisait · j'étais</div>
+              <div class="flip-hint">cliquez pour voir des exemples ▸</div>
+            </div>
+            <div class="rule-face rule-back en">
+              <div class="ex-row">Il <b>faisait</b> beau, la mer <b>était</b> bleue.</div>
+              <div class="ex-row">Il y <b>avait</b> un grand barbecue.</div>
+              <div class="ex-row">C'<b>était</b> délicieux !</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="flip-tip" style="margin-top:12px;">Et le passé composé ? Il revient samedi prochain — on mélange les deux le 17 octobre.</p>
+    </section>
+
+    <!-- 5 LA FORMATION -->
+    <section class="slide compact">
+      <div class="eyebrow">L'imparfait <span class="page-badge">Édito A2 — manuel p. 30</span></div>
+      <h2>Comment on le fabrique</h2>
+      <div class="form-grid">
+        <div>
+          <div id="steps">
+            <div class="step seq-item"><span class="n">1</span>On prend <b>nous</b> au présent : nous <b>jou</b>ons · nous <b>all</b>ons · nous <b>fais</b>ons · nous <b>av</b>ons</div>
+            <div class="step seq-item"><span class="n">2</span>On enlève <b>-ons</b> : jou- · all- · fais- · av-</div>
+            <div class="step seq-item"><span class="n">3</span>On ajoute les terminaisons : je jou<b class="v">ais</b> · j'all<b class="v">ais</b> · je fais<b class="v">ais</b> · j'av<b class="v">ais</b></div>
+            <div class="step seq-item"><span class="n">★</span><b>Une seule exception : être</b> → j'<b class="v">étais</b>, c'<b class="v">était</b></div>
+          </div>
+          <div class="seq-controls" style="margin-top:8px;">
+            <button class="seq-btn" id="stepNext">Étape suivante ▸</button>
+            <button class="seq-reset" id="stepReset">↺ Recommencer</button>
+          </div>
+          <div class="note-box sound"><b>Bonne nouvelle pour l'oral :</b> je jou<b>ais</b>, tu jou<b>ais</b>, il jou<b>ait</b>, ils jou<b>aient</b> → <b>un seul son</b> [ɛ] ! Quatre formes écrites, une seule prononciation.<span class="en" style="color:#23543f;">-ais, -ait, -aient all sound the same.</span></div>
+        </div>
+        <div>
+          <div class="conj">
+            <table>
+              <tr><td>je / j'</td><td><span class="stem">av</span><span class="end">ais</span></td></tr>
+              <tr><td>tu</td><td><span class="stem">av</span><span class="end">ais</span></td></tr>
+              <tr><td>il / elle / on</td><td><span class="stem">av</span><span class="end">ait</span></td></tr>
+              <tr><td>nous</td><td><span class="stem">av</span><span class="end">ions</span></td></tr>
+              <tr><td>vous</td><td><span class="stem">av</span><span class="end">iez</span></td></tr>
+              <tr><td>ils / elles</td><td><span class="stem">av</span><span class="end">aient</span></td></tr>
+            </table>
+          </div>
+          <div class="note-box liaison"><b>L'accent français — les liaisons :</b><br>
+            <span style="font-size:1.1rem;">nous<span class="lk">‿</span>avions · vous<span class="lk">‿</span>étiez · ils<span class="lk">‿</span>étaient · on<span class="lk">‿</span>allait</span><br>
+            <i>Le s ou le n « saute » sur la voyelle : nou-z-avions !</i></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6 AVANT / MAINTENANT -->
+    <section class="slide">
+      <div class="eyebrow">À l'oral <span class="page-badge">Édito A2 — manuel p. 30, activité 6</span></div>
+      <h2>Avant… et maintenant ?</h2>
+      <p class="lead">Imparfait pour avant, présent pour maintenant. Posez la question à une camarade.<span class="en">Imparfait for "before", present for "now". Ask a classmate.</span></p>
+      <div class="am-model">Fabrice : « <b>Avant</b>, on <b>faisait</b> des bêtises en Corse. <b>Maintenant</b>, ce <b>sont</b> les enfants de mes copains ! »</div>
+      <div class="am-grid">
+        <div class="am pat">
+          <div class="who">Pour Patricia</div>
+          <div class="q">Quand tu étais petite, vous étiez combien à la maison ? C'était comment ?</div>
+          <div class="q">Et maintenant, qu'est-ce que tu fais le week-end ?</div>
+          <div><button class="reveal-btn">Exemple de réponse</button><div class="answer">« Avant, on était dix à la maison ! C'était… Maintenant, le week-end, je… »</div></div>
+        </div>
+        <div class="am me">
+          <div class="who">Pour Mary-Ellen</div>
+          <div class="q">Avant, tu habitais en Alaska ? C'était comment ?</div>
+          <div class="q">Et maintenant, qu'est-ce que tu vois dans ton jardin ?</div>
+          <div><button class="reveal-btn">Exemple de réponse</button><div class="answer">« Avant, j'habitais à Anchorage. Il faisait froid ! Maintenant… »</div></div>
+        </div>
+        <div class="am britt">
+          <div class="who">Pour Britt</div>
+          <div class="q">Quand tu étais petite, tu avais un chien, Max. Il était comment ? Tu avais peur de lui ?</div>
+          <div class="q">Et maintenant, tu as un animal ?</div>
+          <div><button class="reveal-btn">Exemple de réponse</button><div class="answer">« Avant, j'avais un chien, Max. Il était grand, et j'avais peur de lui ! Maintenant, j'ai… / je n'ai pas d'animal. »</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7 LES CINQ SENS -->
+    <section class="slide compact">
+      <div class="eyebrow">Le souvenir et les sens <span class="page-badge">Édito A2 — manuel p. 31 · audio piste 13</span></div>
+      <h2>Un souvenir, cinq sens</h2>
+      <div class="sense-grid" id="senseGrid">
+        <div class="sc"><div class="ico">👁️</div><div class="nm">la vue</div><div class="vb">voir, regarder</div><div class="ex">« On voit la mer ! »</div></div>
+        <div class="sc"><div class="ico">👂</div><div class="nm">l'ouïe</div><div class="vb">entendre, écouter</div><div class="ex">« On entend les oiseaux. »</div></div>
+        <div class="sc"><div class="ico">👃</div><div class="nm">l'odorat</div><div class="vb">sentir</div><div class="ex">« Ça sent bon ! »</div></div>
+        <div class="sc"><div class="ico">👅</div><div class="nm">le goût</div><div class="vb">goûter</div><div class="ex">« C'était délicieux ! »</div></div>
+        <div class="sc"><div class="ico">✋</div><div class="nm">le toucher</div><div class="vb">toucher</div><div class="ex">« C'était doux. »</div></div>
+      </div>
+      <p class="lead" style="margin-bottom:8px;">Écoutez les 5 mini-dialogues (livre p. 31, activité 3). Quel sens ? Quel souvenir ?<span class="en">Listen to the 5 short dialogues. Which sense?</span></p>
+      <div class="audio-box">
+        <div class="item"><span class="num">a</span><div><button class="reveal-btn">Réponse</button><div class="answer">👃 une bonne odeur</div></div></div>
+        <div class="item"><span class="num">b</span><div><button class="reveal-btn">Réponse</button><div class="answer">👁️ une belle vue</div></div></div>
+        <div class="item"><span class="num">c</span><div><button class="reveal-btn">Réponse</button><div class="answer">👁️ un album photos</div></div></div>
+        <div class="item"><span class="num">d</span><div><button class="reveal-btn">Réponse</button><div class="answer">👃 un parfum</div></div></div>
+        <div class="item"><span class="num">e</span><div><button class="reveal-btn">Réponse</button><div class="answer">👂 un bruit agréable</div></div></div>
+      </div>
+      <div class="frame-box" style="margin-bottom:0;">
+        <div class="fr">À vous : « Je me souviens de l'odeur / du goût / du bruit de ___. C'était ___ ! »</div>
+        <div class="example">Ex. : « Je me souviens de l'odeur du gâteau au chocolat de ma maman. C'était délicieux ! »</div>
+        <div class="hint">Un petit souvenir tout simple — la cuisine, les vacances, un jardin. Vous avez le droit d'inventer !</div>
+      </div>
+    </section>
+
+    <!-- 8 CLÔTURE -->
+    <section class="slide">
+      <div class="eyebrow">Pour finir</div>
+      <h2>Votre carte de ma vie</h2>
+      <div class="story-note">
+        <span class="story-tag">Pour le grand oral du 24 octobre</span><br>
+        Deux phrases de plus pour votre récit — votre enfance, avec l'imparfait. On les garde, et on les raconte le 24.
+      </div>
+      <div class="frame-box"><div class="fr">« Quand j'étais petite, j'habitais à ___. Il y avait ___. »</div><div class="example">Ex. : « Quand j'étais petit, j'habitais au Mans. Il y avait le tennis et les barbecues du dimanche. »</div></div>
+      <div class="frame-box"><div class="fr">« Je me souviens de l'odeur / du goût / du bruit de ___. »</div><div class="example">Ex. : « Je me souviens du goût de la bûche framboise de Noël. »</div></div>
+      <div class="closing" style="margin-top:6px;margin-bottom:0;">
+        <p>Mardi : <b>« Quand j'avais vingt ans… »</b></p>
+        <span class="en">Tuesday: "When I was twenty…" — think about it!</span>
+      </div>
+      <p class="flip-tip" style="margin-top:12px;">À lire à la maison (bonus) : « Saveurs de Corse », manuel p. 28 — les souvenirs de Lisandra… en Corse, comme Fabrice !</p>
+    </section>
+
+  </div>
+
+  <div class="botbar">
+    <button class="nav-btn" id="prevBtn">◂ Précédent</button>
+    <div class="dots" id="dots"></div>
+    <span class="counter" id="counter"></span>
+    <button class="nav-btn" id="nextBtn">Suivant ▸</button>
+  </div>
+
+<script>
+const slides = Array.from(document.querySelectorAll('.slide'));
+const dotsWrap = document.getElementById('dots');
+slides.forEach((s,i)=>{
+  const d = document.createElement('button');
+  d.className = 'dot' + (i===0 ? ' active' : '');
+  d.addEventListener('click', ()=> showSlide(i));
+  dotsWrap.appendChild(d);
+});
+let idx = 0;
+function showSlide(i){
+  idx = Math.max(0, Math.min(slides.length-1, i));
+  slides.forEach((s,j)=> s.classList.toggle('active', j===idx));
+  document.querySelectorAll('.dot').forEach((d,j)=> d.classList.toggle('active', j===idx));
+  document.getElementById('counter').textContent = (idx+1)+' / '+slides.length;
+  document.getElementById('prevBtn').disabled = idx===0;
+  document.getElementById('nextBtn').disabled = idx===slides.length-1;
+  document.getElementById('topbar').classList.toggle('on-dark', idx===0);
+  window.scrollTo(0,0);
+}
+function go(i){ showSlide(i); }
+document.getElementById('prevBtn').addEventListener('click', ()=> showSlide(idx-1));
+document.getElementById('nextBtn').addEventListener('click', ()=> showSlide(idx+1));
+document.addEventListener('keydown', e=>{
+  if(['ArrowRight','PageDown'].includes(e.key)) showSlide(idx+1);
+  if(['ArrowLeft','PageUp'].includes(e.key)) showSlide(idx-1);
+});
+showSlide(0);
+
+(function(){
+  const box = document.getElementById('stars');
+  for(let i=0;i<36;i++){
+    const s = document.createElement('span');
+    s.style.left = Math.random()*100+'%'; s.style.top = Math.random()*100+'%';
+    s.style.animationDelay = (Math.random()*3.5)+'s';
+    box.appendChild(s);
+  }
+})();
+
+function setupSequence(btnId, resetId, containerId, displayMode){
+  displayMode = displayMode || 'block';
+  const btn = document.getElementById(btnId), resetBtn = document.getElementById(resetId), container = document.getElementById(containerId);
+  let shown = 0;
+  const items = ()=> container.querySelectorAll('.seq-item');
+  function revealNext(){
+    const its = items();
+    if(shown < its.length){ const el = its[shown]; el.style.display = displayMode; requestAnimationFrame(()=> el.classList.add('shown')); shown++; }
+    if(shown >= its.length){ btn.disabled = true; btn.textContent = 'Tout est affiché ✓'; }
+  }
+  function reset(){ items().forEach(el=>{ el.classList.remove('shown'); el.style.display='none'; }); shown = 0; btn.disabled = false; btn.textContent = btn.dataset.label; }
+  btn.dataset.label = btn.textContent;
+  btn.addEventListener('click', revealNext); resetBtn.addEventListener('click', reset); reset();
+}
+setupSequence('stepNext','stepReset','steps','block');
+
+/* slide 2 */
+document.getElementById('revealImp').addEventListener('click', function(){
+  document.getElementById('bigReveal').classList.toggle('show');
+});
+/* slide 3 */
+document.querySelectorAll('.sense').forEach(b=> b.addEventListener('click', ()=> b.classList.toggle('on')));
+const story = document.getElementById('story');
+document.getElementById('showStory').addEventListener('click', function(){
+  story.classList.toggle('show'); this.textContent = story.classList.contains('show') ? 'Masquer le texte' : 'Afficher le texte';
+});
+document.getElementById('showIcons').addEventListener('click', ()=>{ story.classList.add('show'); story.classList.toggle('icons'); });
+document.getElementById('showEn').addEventListener('click', ()=>{ story.classList.add('show'); story.classList.toggle('en-on'); });
+document.getElementById('showVerbs').addEventListener('click', ()=>{ story.classList.add('show'); story.classList.toggle('hl'); });
+/* flips */
+['flipHab','flipDec'].forEach(id=> document.getElementById(id).addEventListener('click', function(){ this.classList.toggle('flipped'); }));
+document.querySelectorAll('.sc').forEach(c=> c.addEventListener('click', ()=> c.classList.toggle('flipped')));
+/* reveal buttons */
+document.addEventListener('click', (e)=>{
+  if(e.target.classList.contains('reveal-btn')){
+    const ans = e.target.parentElement.querySelector('.answer');
+    ans.classList.toggle('show');
+    const base = e.target.dataset.label || (e.target.dataset.label = e.target.textContent);
+    e.target.textContent = ans.classList.contains('show') ? 'Masquer' : base;
+  }
+});
+</script>
+</body>
+</html>
